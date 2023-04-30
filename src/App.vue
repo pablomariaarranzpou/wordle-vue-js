@@ -6,6 +6,7 @@
 import WordleMain from './components/WordleMain.vue'
 
 export default {
+  lang: 'es',
   name: 'App',
   components: {
     WordleMain
