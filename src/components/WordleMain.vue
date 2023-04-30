@@ -72,7 +72,7 @@ export default {
     return;
   }
   if (guess.length !== this.word.length) {
-    alert('Your guess must be the same length as the target word!');
+    alert('La palabra debe tener ' + this.word.length + ' letras');
     return;
   }
   this.guess = '';
