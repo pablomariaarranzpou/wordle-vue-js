@@ -1,3 +1,3 @@
 module.exports = {
-  publicPath: '/wordle-vue-js',
-}
+  publicPath: process.env.NODE_ENV === "production" ? "/wordle-vue-js/" : "/",
+};
