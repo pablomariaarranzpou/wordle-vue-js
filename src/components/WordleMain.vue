@@ -8,16 +8,15 @@
         </div>
       </div>
     </div>
-    <div class="input-group">
-      <input type="text" class="guess" v-model="currentWord" :disabled="isGameOver"  v-on:keyup.enter="onEnter"/>
-      <button :disabled="isGameOver" @click="guessWord(currentWord)">Envía</button>
-    </div>
-    <button @click="initializeGame">Nuevo juego</button>
   </div>
   <div class="guess-container">
-    <div class="guess" v-for="(guess, index) in usedLeters" :key="index">
-      {{ guess }}
+    <div ref="circleInputs">
+      <input type = "text" class="circle-input" maxlength="1" v-for="(letter, index) in word" :key="index" @input="onInput(index)"
+      :disabled="index > currentIndex + 1">
     </div>
+  </div>
+  <div>
+    <button @click="initializeGame">Nuevo juego</button>
   </div>
 </template>
 
@@ -49,6 +48,36 @@ export default {
         console.error('Failed to load words:', error);
       }
     },
+    onInput(index) {
+      const input = event.target;
+      const value = input.value.toUpperCase();
+
+      // Only allow input from left to right
+      if (index > this.currentIndex + 1) {
+        input.value = "";
+        return;
+      }
+
+      if (value) {
+        this.currentIndex = index;
+        input.blur(); // Blur the current input
+        this.next(); // Focus on the next input
+      }
+    },
+    next() {
+      const circleInputs = this.$refs.circleInputs.querySelectorAll(".circle-input");
+      const nextInput = circleInputs[this.currentIndex + 1];
+      if (nextInput) {
+        nextInput.focus();
+      } else {
+        // All inputs are filled, submit the word
+        const guess = Array.from(circleInputs).map(input => input.value).join("");
+        //clear all the circle inputs and focus on the first one
+        circleInputs.forEach(input => input.value = "");
+        circleInputs[0].focus();
+        this.guessWord(guess);
+      }
+    },
     async initializeGame() {
       const diacritic = require('diacritic');
       this.words = await this.loadWords();
@@ -69,9 +98,6 @@ export default {
       const feedbackRow = Array(this.word.length).fill('?');
       this.feedbackRows.push(feedbackRow);
     },
-
-    
-
     guessWord(guess) {
       this.currentWord = '';
       guess = guess.toUpperCase();
@@ -82,11 +108,15 @@ export default {
         alert('La palabra debe tener ' + this.word.length + ' letras');
         return;
       }
+      
       this.guess = '';
       const letterCounts = {};
       const feedbacks = [];
       for (let i = 0; i < this.word.length; i++) {
         const letter = this.word[i];
+        if(!this.usedLeters.includes(letter)){
+        this.usedLeters.push(letter);
+      }
         if (letter in letterCounts) {
           letterCounts[letter]++;
         }else {
@@ -248,4 +278,13 @@ button {
   background-color: rgba(15, 15, 15, 0.157);
   color: #232323;
 }
+
+.circle-input {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  text-align: center;
+  font-size: 18px;
+}
+
 </style>
