@@ -1,6 +1,6 @@
 <template>
   <div class="wordle-game">
-    <h1>PABLO'S WORDLE {{ word }}</h1>
+    <h1>PABLO'S WORDLE</h1>
     <div class="feedback-container">
       <div class="feedback-row" v-for="(feedbackRow, index) in feedbackRows" :key="index">
         <div class="feedback" v-for="(feedback, index) in feedbackRow" :key="index" :class="feedbackClass(feedback[0])">
