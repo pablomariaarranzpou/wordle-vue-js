@@ -1,6 +1,6 @@
 <template>
   <div class="wordle-game">
-    <h1>PABLO'S WORDLE</h1>
+    <h1>PABLO'S WORDLE {{ word }}</h1>
     <div class="feedback-container">
       <div class="feedback-row" v-for="(feedbackRow, index) in feedbackRows" :key="index">
         <div class="feedback" v-for="(feedback, index) in feedbackRow" :key="index" :class="feedbackClass(feedback[0])">
@@ -9,7 +9,7 @@
       </div>
     </div>
     <div class="input-group">
-      <input type="text" class="guess" v-model="currentWord" :disabled="isGameOver" />
+      <input type="text" class="guess" v-model="currentWord" :disabled="isGameOver"  v-on:keyup.enter="onEnter"/>
       <button :disabled="isGameOver" @click="guessWord(currentWord)">Envía</button>
     </div>
     <button @click="initializeGame">Nuevo juego</button>
@@ -25,6 +25,7 @@
 export default {
   data() {
     return {
+      
       words: ['HELLO'],
       word: '',
       guess: '',
@@ -49,10 +50,15 @@ export default {
       }
     },
     async initializeGame() {
+      const diacritic = require('diacritic');
       this.words = await this.loadWords();
       this.word = this.words[Math.floor(Math.random() * this.words.length)].toUpperCase();
+      this.word = diacritic.clean(this.word);
+      this.word = this.word.replace(/[^\w\s]/gi, '').replace(/[^\S\r\n]+/g, '').replace(/[^\w]+$/, '');
       while (this.word.length < 4 || this.word.length > 7) {
         this.word = this.words[Math.floor(Math.random() * this.words.length)].toUpperCase();
+        this.word = diacritic.clean(this.word);
+        this.word = this.word.replace(/[^\w\s]/gi, '').replace(/[^\S\r\n]+/g, '').replace(/[^\w]+$/, '');
       }
       this.guess = '_'.repeat(this.word.length);
       this.feedbackRows = [];
@@ -67,49 +73,49 @@ export default {
     
 
     guessWord(guess) {
-  guess = guess.toUpperCase();
-  if (this.isGameOver) {
-    return;
-  }
-  if (guess.length !== this.word.length) {
-    alert('La palabra debe tener ' + this.word.length + ' letras');
-    return;
-  }
-  this.guess = '';
-  const letterCounts = {};
-  const feedbacks = [];
-  for (let i = 0; i < this.word.length; i++) {
-    const letter = this.word[i];
-    if (letter in letterCounts) {
-      letterCounts[letter]++;
-      if(guess[i] === this.word[i]){
-        feedbacks.push(['✓']);
-        letterCounts[guess[i]]--;
-        } else {
-          feedbacks.push(['X']);
+      this.currentWord = '';
+      guess = guess.toUpperCase();
+      if (this.isGameOver) {
+        return;
+      }
+      if (guess.length !== this.word.length) {
+        alert('La palabra debe tener ' + this.word.length + ' letras');
+        return;
+      }
+      this.guess = '';
+      const letterCounts = {};
+      const feedbacks = [];
+      for (let i = 0; i < this.word.length; i++) {
+        const letter = this.word[i];
+        if (letter in letterCounts) {
+          letterCounts[letter]++;
+        }else {
+          letterCounts[letter] = 1;
         }
-    } else {
-      letterCounts[letter] = 1;
-      if(guess[i] === this.word[i]){
-        feedbacks.push(['✓']);
-        letterCounts[guess[i]]--;
-        } else {
-          feedbacks.push(['X']);
+        console.log(letter)
+      }
+
+      for (let i = 0; i < this.word.length; i++) {
+          if(guess[i] === this.word[i]){
+              feedbacks.push(['✓']);
+              letterCounts[guess[i]]--;
+            } else {
+              feedbacks.push(['X']);
+            }
         }
-    }
-  }
-  for (let i = 0; i < this.word.length; i++) {
-    const guessLetter = guess[i];
-    if (guessLetter in letterCounts && letterCounts[guessLetter] > 0 && feedbacks[i] !== '✓') {
-      feedbacks[i] = ['O'];
-      letterCounts[guessLetter]--;
-    }
-    feedbacks[i].push(guess.charAt(i))
-    
-  }
-  
+      
+      
+      for (let i = 0; i < this.word.length; i++) {
+        const guessLetter = guess[i];
+        if (guessLetter in letterCounts && letterCounts[guessLetter] > 0 && feedbacks[i] != '✓') {
+          feedbacks[i] = ['O'];
+          letterCounts[guessLetter]--;
+        } 
+        feedbacks[i].push(guess.charAt(i)) 
+      }
+
   this.feedbackRows.push(feedbacks);
-  console.log(feedbacks)
+
   if (guess.toUpperCase() === this.word) {
     this.isGameOver = true;
     alert('¡HAS GANADO!');
