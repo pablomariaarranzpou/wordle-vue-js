@@ -133,6 +133,9 @@ export default {
       this.correctGuesses = [];
       this.wrongGuesses = [];
       this.$refs.circleInputs.style.display = "block";
+      this.$nextTick(() => {
+        this.$refs.circleInputs.querySelectorAll(".circle-input")[0].focus();
+        });
     },
     guessWord(guess) {
       this.currentWord = '';
