@@ -12,7 +12,7 @@
   <div class="guess-container">
     <div ref="circleInputs">
       <input type = "text" class="circle-input" maxlength="1" v-for="(letter, index) in word" :key="index" @input="onInput(index)"
-      :disabled="index > currentIndex + 1" @keydown="handleKeyDown($event, index)">
+      :disabled="index != editCircle" @keydown="handleKeyDown($event, index)" >
 
     </div>
   </div>
@@ -29,6 +29,7 @@ export default {
       words: ['HELLO'],
       word: '',
       guess: '',
+      editCircle: 0,
       feedbackRows: [],
       isGameOver: false,
       currentWord: '',
@@ -57,9 +58,12 @@ export default {
     previous() {
       const circleInputs = this.$refs.circleInputs.querySelectorAll(".circle-input");
       const previousInput = circleInputs[this.currentIndex - 1];
+      this.editCircle = this.currentIndex - 1;
       if (previousInput) {
         previousInput.value = "";
-        previousInput.focus();
+        this.$nextTick(() => {
+          previousInput.focus();
+        });
       }
     },
     
@@ -92,18 +96,26 @@ export default {
     next() {
       const circleInputs = this.$refs.circleInputs.querySelectorAll(".circle-input");
       const nextInput = circleInputs[this.currentIndex + 1];
+      this.editCircle = this.currentIndex + 1;
       if (nextInput) {
+        this.$nextTick(() => {
+          nextInput.focus();
+        });
         nextInput.focus();
       } else {
         // All inputs are filled, submit the word
         const guess = Array.from(circleInputs).map(input => input.value).join("");
         //clear all the circle inputs and focus on the first one
         circleInputs.forEach(input => input.value = "");
-        circleInputs[0].focus();
+        this.$nextTick(() => {
+          circleInputs[0].focus();
+        });
+        this.editCircle = 0;
         this.guessWord(guess);
       }
     },
     async initializeGame() {
+      console.log(this.currentIndex);
       const diacritic = require('diacritic');
       this.words = await this.loadWords();
       this.word = this.words[Math.floor(Math.random() * this.words.length)].toUpperCase();
@@ -173,6 +185,7 @@ export default {
   if (guess.toUpperCase() === this.word) {
     this.isGameOver = true;
     alert('¡HAS GANADO!');
+    this.$refs.circleInputs.style.display = "none";
   } else {
     this.wrongGuesses.push(guess);
     if (this.wrongGuesses.length >= 6) {
@@ -314,6 +327,7 @@ button {
   text-align: center;
   font-size: 18px;
 }
+
 
 
 </style>
