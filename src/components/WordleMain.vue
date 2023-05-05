@@ -12,7 +12,8 @@
   <div class="guess-container">
     <div ref="circleInputs">
       <input type = "text" class="circle-input" maxlength="1" v-for="(letter, index) in word" :key="index" @input="onInput(index)"
-      :disabled="index > currentIndex + 1">
+      :disabled="index > currentIndex + 1" @keydown="handleKeyDown($event, index)">
+
     </div>
   </div>
   <div>
@@ -38,6 +39,30 @@ export default {
     this.initializeGame();
   },
   methods: {
+    handleKeyDown(event, index) {
+    if (event.keyCode === 8 && index > 0) {
+      event.preventDefault();
+      console.log('backspace pressed');
+      const input = event.target;
+      input.blur();
+      this.delete(index);
+    }
+  },
+    delete(index) {
+      console.log('delete method called');
+        console.log('backspace pressed');
+        this.currentIndex = index;
+        this.previous();
+    },
+    previous() {
+      const circleInputs = this.$refs.circleInputs.querySelectorAll(".circle-input");
+      const previousInput = circleInputs[this.currentIndex - 1];
+      if (previousInput) {
+        previousInput.value = "";
+        previousInput.focus();
+      }
+    },
+    
     async loadWords() {
       try {
         const response = await fetch('./words.txt');
@@ -89,14 +114,13 @@ export default {
         this.word = diacritic.clean(this.word);
         this.word = this.word.replace(/[^\w\s]/gi, '').replace(/[^\S\r\n]+/g, '').replace(/[^\w]+$/, '');
       }
-      this.guess = '_'.repeat(this.word.length);
+      this.guess = "";
       this.feedbackRows = [];
       this.isGameOver = false;
       this.currentWord = '';
       this.correctGuesses = [];
       this.wrongGuesses = [];
-      const feedbackRow = Array(this.word.length).fill('?');
-      this.feedbackRows.push(feedbackRow);
+      this.$refs.circleInputs.style.display = "block";
     },
     guessWord(guess) {
       this.currentWord = '';
@@ -154,6 +178,8 @@ export default {
     if (this.wrongGuesses.length >= 6) {
       this.isGameOver = true;
       alert('HAS PERDIDO :( LA PALABRA ERA: ' + this.word);
+      //make the circle inputs invisible when the game is over
+      this.$refs.circleInputs.style.display = "none";
     }
   }
 }
@@ -280,11 +306,14 @@ button {
 }
 
 .circle-input {
+  justify-content: center;
   width: 30px;
+  margin-left: 5px;
   height: 30px;
   border-radius: 50%;
   text-align: center;
   font-size: 18px;
 }
+
 
 </style>
