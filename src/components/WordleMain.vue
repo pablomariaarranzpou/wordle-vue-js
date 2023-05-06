@@ -7,6 +7,9 @@
       <img :src="require('@/assets/confeti.gif')"/>
       <img :src="require('@/assets/confeti.gif')"/>
     </div>
+    <div class="confeti" v-if="this.perdido">
+      <img :src="require('@/assets/decepcion-o.gif')"/>
+    </div>
     <div class="feedback-container">
       <div class="feedback-row" v-for="(feedbackRow, index) in feedbackRows" :key="index">
         <div class="feedback" v-for="(feedback, index) in feedbackRow" :key="index" :class="feedbackClass(feedback[0])">
@@ -55,6 +58,7 @@ export default {
       goodguesses: [],
       wrongguessesletters: [],
       ganado: false,
+      perdido: false,
 
     };
   },
@@ -161,6 +165,7 @@ export default {
       this.badguesses = [],
       this.goodguesses= [],
       this.ganado = false,
+      this.perdido = false,
       this.wrongguessesletters= []
       this.wrongGuesses = [];
       this.$refs.circleInputs.style.display = "block";
@@ -226,6 +231,7 @@ export default {
     this.wrongGuesses.push(guess);
     if (this.wrongGuesses.length >= 6) {
       this.isGameOver = true;
+      this.perdido = true;
       alert('HAS PERDIDO :( LA PALABRA ERA: ' + this.word);
       //make the circle inputs invisible when the game is over
       this.$refs.circleInputs.style.display = "none";
