@@ -147,6 +147,9 @@ export default {
       this.isGameOver = false;
       this.currentWord = '';
       this.correctGuesses = [];
+      this.badguesses = [],
+      this.goodguesses= [],
+      this.wrongguessesletters= []
       this.wrongGuesses = [];
       this.$refs.circleInputs.style.display = "block";
       this.$nextTick(() => {
