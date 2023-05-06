@@ -12,12 +12,19 @@
   <div class="guess-container">
     <div ref="circleInputs">
       <input type = "text" class="circle-input" maxlength="1" v-for="(letter, index) in word" :key="index" @input="onInput(index)"
-      :disabled="index != editCircle" @keydown="handleKeyDown($event, index)" >
+      :disabled="index != editCircle" @keydown="handleKeyDown($event, index)">
+    </div> 
 
-    </div>
   </div>
   <div>
     <button @click="initializeGame">Nuevo juego</button>
+  </div>
+  <div>
+    <div class="keyboard">
+      <button v-for="letter in alphabet" :key="letter" @click="onInput(this.editCircle, letter)" :class="editKeyboard(letter)">
+        {{ letter }}
+      </button>
+    </div>
   </div>
 </template>
 
@@ -29,11 +36,15 @@ export default {
       words: ['HELLO'],
       word: '',
       guess: '',
+      alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
       editCircle: 0,
       feedbackRows: [],
       isGameOver: false,
       currentWord: '',
-      usedLeters: []
+      badguesses: [],
+      goodguesses: [],
+      wrongguessesletters: []
+
     };
   },
   mounted() {
@@ -77,10 +88,13 @@ export default {
         console.error('Failed to load words:', error);
       }
     },
-    onInput(index) {
+    onInput(index, letter=null) {
       const input = event.target;
-      const value = input.value.toUpperCase();
-
+      const value = letter ? letter.toUpperCase() : input.value.toUpperCase();
+      if(letter) {
+        input.value = letter;
+        console.log("index", index, "value", value, "input value", input.value);
+      }
       // Only allow input from left to right
       if (index > this.currentIndex + 1) {
         input.value = "";
@@ -88,13 +102,15 @@ export default {
       }
 
       if (value) {
+        console.log("pedro", value);
         this.currentIndex = index;
         input.blur(); // Blur the current input
-        this.next(); // Focus on the next input
+        this.next(value); // Focus on the next input
       }
     },
-    next() {
+    next(value) {
       const circleInputs = this.$refs.circleInputs.querySelectorAll(".circle-input");
+      circleInputs[this.currentIndex].value = value;
       const nextInput = circleInputs[this.currentIndex + 1];
       this.editCircle = this.currentIndex + 1;
       if (nextInput) {
@@ -153,9 +169,6 @@ export default {
       const feedbacks = [];
       for (let i = 0; i < this.word.length; i++) {
         const letter = this.word[i];
-        if(!this.usedLeters.includes(letter)){
-        this.usedLeters.push(letter);
-      }
         if (letter in letterCounts) {
           letterCounts[letter]++;
         }else {
@@ -167,6 +180,7 @@ export default {
       for (let i = 0; i < this.word.length; i++) {
           if(guess[i] === this.word[i]){
               feedbacks.push(['✓']);
+              this.goodguesses.push(guess[i]);
               letterCounts[guess[i]]--;
             } else {
               feedbacks.push(['X']);
@@ -178,8 +192,11 @@ export default {
         const guessLetter = guess[i];
         if (guessLetter in letterCounts && letterCounts[guessLetter] > 0 && feedbacks[i] != '✓') {
           feedbacks[i] = ['O'];
+          this.badguesses.push(guessLetter);
           letterCounts[guessLetter]--;
-        } 
+        } else if (feedbacks[i] == 'X'){
+          this.wrongguessesletters.push(guessLetter);
+        }
         feedbacks[i].push(guess.charAt(i)) 
       }
 
@@ -211,10 +228,18 @@ feedbackClass(feedback) {
   } else {
     return "";
   }
+},
+
+editKeyboard(letter) {
+    if (this.wrongguessesletters.includes(letter)) {
+      return "wrong-letter";
+    } else if (this.goodguesses.includes(letter)) {
+      return "correct";
+    } else if (this.badguesses.includes(letter)) {
+      return "wrong-position";
+    }
+  return "keyboard.b";
 }
-
-
-
   }
 };
 </script>
@@ -331,6 +356,38 @@ button {
   font-size: 18px;
 }
 
+.keyboard {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 20px;
+}
 
+.keyboard button {
+  width: 50px;
+  height: 50px;
+  font-size: 24px;
+  font-weight: bold;
+  background-color: #acacac;
+  color: rgb(0, 0, 0);
+  border: none;
+  border-radius: 4px;
+  margin: 0.5px;
+}
+
+.keyboard button.correct {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.keyboard button.wrong-letter {
+  background-color: rgb(58, 58, 58);
+  color: #000000;
+}
+
+.keyboard button.wrong-position {
+  background-color: #FFA500;
+  color: white;
+}
 
 </style>
