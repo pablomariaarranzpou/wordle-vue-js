@@ -1,7 +1,6 @@
 <template>
   <div class="wordle-game" >
     <h1>PABLO'S WORDLE</h1>
-    {{ this.word }}
     <div class="confeti" v-if="this.ganado">
       <img :src="require('@/assets/confeti.gif')"/>
     </div>
