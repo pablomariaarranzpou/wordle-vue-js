@@ -1,6 +1,9 @@
 <template>
-  <div class="wordle-game">
+  <div class="wordle-game" >
     <h1>PABLO'S WORDLE</h1>
+    <div class="confeti" v-if="this.ganado">
+      <img src="public/confeti.gif" alt="confeti" />
+    </div>
     <div class="feedback-container">
       <div class="feedback-row" v-for="(feedbackRow, index) in feedbackRows" :key="index">
         <div class="feedback" v-for="(feedback, index) in feedbackRow" :key="index" :class="feedbackClass(feedback[0])">
@@ -43,7 +46,8 @@ export default {
       currentWord: '',
       badguesses: [],
       goodguesses: [],
-      wrongguessesletters: []
+      wrongguessesletters: [],
+      ganado: false,
 
     };
   },
@@ -149,6 +153,7 @@ export default {
       this.correctGuesses = [];
       this.badguesses = [],
       this.goodguesses= [],
+      this.ganado = false,
       this.wrongguessesletters= []
       this.wrongGuesses = [];
       this.$refs.circleInputs.style.display = "block";
@@ -207,6 +212,7 @@ export default {
 
   if (guess.toUpperCase() === this.word) {
     this.isGameOver = true;
+    this.ganado = true;
     alert('¡HAS GANADO!');
     this.$refs.circleInputs.style.display = "none";
   } else {
@@ -222,13 +228,14 @@ export default {
 ,
 
 feedbackClass(feedback) {
-  if (feedback === "✓") {
-    return "correct";
+  if (feedback === "X") {
+    return "wrong-letter";
   } else if (feedback === "O") {
     return "wrong-position";
-  } else if (feedback === "X") {
-    return "wrong-letter";
-  } else {
+  }else if (feedback === "✓") {
+    return "correct";
+  }
+   else {
     return "";
   }
 },
